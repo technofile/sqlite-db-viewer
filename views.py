@@ -54,8 +54,8 @@ def get_indexes(table):
 	unique_indexes = set()
 	cursor = dataset.query('PRAGMA index_list("%s")' % table)
 
-	for x, y in index_to_sql.items():
-		print(x, y)
+	#for x, y in index_to_sql.items():
+	#	print(x, y)
 
 	# Retrieve the indexed columns.
 	index_columns = {}
