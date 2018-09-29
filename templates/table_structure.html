@@ -24,12 +24,12 @@
           <td><code>{{ column.data_type }}</code></td>
           <td>
             {% if column.null %}
-              <span class="glyphicon glyphicon-ok"></span>
+              <i id="check" class="fas fa-check-circle"></i>
             {% endif %}
           </td>
           <td>
             {% if column.primary_key %}
-              <span class="glyphicon glyphicon-ok"></span>
+              <i id="check" class="fas fa-check-circle"></i>
             {% endif %}
           </td>
           <td>
@@ -91,7 +91,7 @@
           </td>
           <td>
             {% if index.unique %}
-              <span class="glyphicon glyphicon-ok"></span>
+              <i id="check" class="fas fa-check-circle"></i>
             {% endif %}
           </td>
           <td>
