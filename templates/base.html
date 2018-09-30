@@ -23,7 +23,7 @@
 				{% block content_header %}
 				<form action="{{ url_for('table_create') }}" class="form-inline pull-right" method="post">
 					<input name="redirect" type="hidden" value="{{ request.path }}" />
-					<input class="form-control input-sm" name="table_name" placeholder="new_table_name"/>
+					<input class="form-control input-sm" name="table_name" placeholder="Create new table"/>
 					<button class="btn btn-primary btn-sm" type="submit">Create</button>
 				</form>
 				{% endblock %}
