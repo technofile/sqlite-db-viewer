@@ -420,7 +420,7 @@ def get_option_parser():
 	parser = optparse.OptionParser()
 	parser.add_option(
 		'--port',
-		default=8080,
+		default=5000,
 		help='Port for web interface, default=8080',
 		type='int')
 	parser.add_option(
@@ -460,7 +460,9 @@ def main():
 	global migrator
 	dataset = DataSet('sqlite:///%s' % db_file)
 	migrator = dataset._migrator
-	app.run(host=options.host, port=options.port, debug=options.debug)
+	# Bind to PORT if defined, otherwise default to 5000.
+	port = int(os.environ.get('PORT', 5000))
+	app.run(host=options.host, port=port, debug=options.debug)
 
 
 if __name__ == '__main__':

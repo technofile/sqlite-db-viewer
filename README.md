@@ -59,6 +59,6 @@ python views.py path/to/sqlite/your/database/file
 
 There are several command line options(flags) available as of now.
 
-- `--port` : default is 8080
+- `--port` : default is 5000
 - `--host` : default is 127.0.0.1
 - `--debug` : default is False
