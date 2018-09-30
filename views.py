@@ -12,7 +12,7 @@ from io import StringIO
 
 from flask import (
 	Flask, abort, escape, flash, redirect, render_template, request,
-	send_file, url_for)
+	send_file, url_for, make_response)
 
 from peewee import *
 from playhouse.dataset import DataSet
@@ -296,8 +296,6 @@ def table_query(table):
 		sql = request.form['sql']
 		if 'export_json' in request.form:
 			return export(table, sql, 'json')
-		elif 'export_csv' in request.form:
-			return export(table, sql, 'csv')
 		try:
 			cursor = dataset.query(sql)
 		except Exception as exc:
@@ -321,21 +319,23 @@ def export(table, sql, export_format):
 	model_class = dataset[table].model_class
 	query = model_class.raw(sql).dicts()
 	buf = StringIO()
-	if export_format == 'json':
-		kwargs = {'indent': 4}
-		filename = '%s-export.json' % table
-		mimetype = 'text/javascript'
-	else:
-		kwargs = {}
-		filename = '%s-export.csv' % table
-		mimetype = 'text/csv'
+	export_format == 'json'
+
+	kwargs = {'indent': 4}
+	filename = '%s-export.json' % table
+	mimetype = 'text/javascript'
+
 	dataset.freeze(query, export_format, file_obj=buf, **kwargs)
 	buf.seek(0)
-	return send_file(
-		buf,
-		mimetype=mimetype,
-		as_attachment=True,
-		attachment_filename=filename,)
+	response_data = buf.getvalue()
+	response = make_response(response_data)
+	response.headers['Content-Length'] = len(response_data)
+	response.headers['Content-Type'] = mimetype
+	response.headers['Content-Disposition'] = 'attachment; filename=%s' % (
+		filename)
+	response.headers['Expires'] = 0
+	response.headers['Pragma'] = 'public'
+	return response
 
 @app.route('/<table>/import/', methods=['GET', 'POST'])
 @require_table
@@ -347,14 +347,12 @@ def table_import(table):
 		file_obj = request.files.get('file')
 		if not file_obj:
 			flash('Please select an import file.', 'danger')
-		elif not file_obj.filename.lower().endswith(('.csv', '.json')):
-			flash('Unsupported file-type. Must be a .json or .csv file.',
+		elif not file_obj.filename.lower().endswith(('.json')):
+			flash('Unsupported file-type. Must be a .json file.',
 				  'danger')
 		else:
 			if file_obj.filename.lower().endswith('.json'):
 				format = 'json'
-			else:
-				format = 'csv'
 			try:
 				with dataset.transaction():
 					count = dataset.thaw(
@@ -415,8 +413,6 @@ def _general():
 		'database_modified': ts_to_dt(stat.st_mtime),
 		'indexes': indexes,
 		'tables': dataset.tables,
-		'virtual_tables': get_virtual_tables(),
-		'virtual_tables_corollary': get_corollary_virtual_tables(),
 	}
 
 @app.context_processor
@@ -479,7 +475,7 @@ def main():
 	parser = get_option_parser()
 	options, args = parser.parse_args()
 	if not args:
-		die('Error: missing required path to database file.')
+		die('Error: A path to database file is required!.')
 	db_file = args[0]
 	global dataset
 	global migrator
