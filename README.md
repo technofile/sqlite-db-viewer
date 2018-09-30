@@ -52,7 +52,7 @@ pipenv shell
 pipenv install
 
 # Run the project
-python views.py sample_dbs/chinhook.db
+python views.py path/to/sqlite/your/database/file
 ```
 
 ## Options
