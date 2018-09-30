@@ -4,6 +4,7 @@ For folks who hate terminal by folks who love terminal!
 `sqlite-db-viewer` is a web-based SQLite database manager that provides an interactive and a nice interface to manage your SQLite databases.
 
 ## Project dependencies
+- Python3
 - Flask
 - peewee
 
@@ -53,3 +54,11 @@ pipenv install
 # Run the project
 python views.py sample_dbs/chinhook.db
 ```
+
+## Options
+
+There are several command line options(flags) available as of now.
+
+- `--port` : default is 8080
+- `--host` : default is 127.0.0.1
+- `--debug` : default is False
