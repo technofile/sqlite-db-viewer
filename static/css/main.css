@@ -1,3 +1,7 @@
 #sidebar .nav > li > a {
 	padding: 10px;
 }
+
+#check {
+    color: #0db132;
+}
