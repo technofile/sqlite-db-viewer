@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block sidebar %}
-<input class="form-control input-sm" id="table-search" placeholder="table name..." type="text" />
+	<h2 class="sidebar-brand">
+		Tables
+	</h2>
 	<ul class="nav nav-pills nav-stacked" role="tablist">
 	{% for table_name in tables|sort %}
 		{% if table_name not in virtual_tables_corollary %}
