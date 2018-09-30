@@ -86,20 +86,20 @@ def get_foreign_keys(table):
 		ForeignKeyMetadata(row[3], row[2], row[4])
 		for row in cursor.fetchall()]
 
-def get_virtual_tables():
-	cursor = dataset.query(
-		'SELECT name FROM sqlite_master '
-		'WHERE type = ? AND sql LIKE ? '
-		'ORDER BY name',
-		('table', 'CREATE VIRTUAL TABLE%'))
-	return set([row[0] for row in cursor.fetchall()])
+#def get_virtual_tables():
+#	cursor = dataset.query(
+#		'SELECT name FROM sqlite_master '
+#		'WHERE type = ? AND sql LIKE ? '
+#		'ORDER BY name',
+#		('table', 'CREATE VIRTUAL TABLE%'))
+#	return set([row[0] for row in cursor.fetchall()])
 
-def get_corollary_virtual_tables():
-	virtual_tables = get_virtual_tables()
-	suffixes = ['content', 'docsize', 'segdir', 'segments', 'stat']
-	return set(
-		'%s_%s' % (virtual_table, suffix) for suffix in suffixes
-		for virtual_table in virtual_tables)
+#def get_corollary_virtual_tables():
+#	virtual_tables = get_virtual_tables()
+#	suffixes = ['content', 'docsize', 'segdir', 'segments', 'stat']
+#	return set(
+#		'%s_%s' % (virtual_table, suffix) for suffix in suffixes
+#		for virtual_table in virtual_tables)
 
 @app.route('/')
 def index():
@@ -185,12 +185,13 @@ def add_column(table):
 def drop_column(table):
 	request_data = get_request_data()
 	name = request_data.get('name', '')
-	columns = get_columns(table)
+	columns = dataset.get_columns(table)
 	column_names = [column.name for column in columns]
 	if request.method == 'POST':
 		if name in column_names:
 			migrate(migrator.drop_column(table, name))
 			flash('Column "%s" was dropped successfully!' % name, 'success')
+			dataset.update_cache(table)
 			return redirect(url_for('table_structure', table=table))
 		else:
 			flash('Name is required.', 'danger')
@@ -272,7 +273,7 @@ def table_content(table):
 			field = field.desc()
 		query = query.order_by(field)
 	field_names = ds_table.columns
-	columns = [field.db_column for field in ds_table.model_class._meta.get_fields()]
+	columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
 	return render_template(
 		'table_content.html',
 		columns=columns,
@@ -386,8 +387,9 @@ def drop_table(table):
 
 @app.template_filter('value_filter')
 def value_filter(value, max_length=50):
+	unicode_type = str
 	value = escape(value)
-	if isinstance(value, basestring):
+	if isinstance(value, unicode_type):
 		if len(value) > max_length:
 			return ('<span class="truncated">%s</span> '
 					'<span class="full" style="display:none;">%s</span>'
