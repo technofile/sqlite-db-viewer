@@ -425,8 +425,8 @@ def get_option_parser():
 		type='int')
 	parser.add_option(
 		'--host',
-		default='127.0.0.1',
-		help='Host for web interface, default=127.0.0.1')
+		default='0.0.0.0',
+		help='Host for web interface, default=0.0.0.0')
 	parser.add_option(
 		'-d',
 		'--debug',
@@ -438,15 +438,6 @@ def die(msg, exit_code=1):
 	sys.stderr.write('%s\n' % msg)
 	sys.stderr.flush()
 	sys.exit(exit_code)
-
-def open_browser_tab(host, port):
-	url = 'http://%s:%s/' % (host, port)
-	def _open_tab(url):
-		time.sleep(1.5)
-		webbrowser.open_new_tab(url)
-	thread = threading.Thread(target=_open_tab, args=(url,))
-	thread.daemon = True
-	thread.start()
 
 
 def main():
