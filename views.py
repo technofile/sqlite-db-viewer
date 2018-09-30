@@ -71,6 +71,7 @@ def get_indexes(table):
 		for name in sorted(index_to_sql)]
 
 def get_columns(table):
+	#('name', 'data_type', 'null', 'primary_key'))
 	cursor = dataset.query('PRAGMA table_info("%s")' % table)
 	return [
 		ColumnMetadata(
@@ -85,21 +86,6 @@ def get_foreign_keys(table):
 	return [
 		ForeignKeyMetadata(row[3], row[2], row[4])
 		for row in cursor.fetchall()]
-
-#def get_virtual_tables():
-#	cursor = dataset.query(
-#		'SELECT name FROM sqlite_master '
-#		'WHERE type = ? AND sql LIKE ? '
-#		'ORDER BY name',
-#		('table', 'CREATE VIRTUAL TABLE%'))
-#	return set([row[0] for row in cursor.fetchall()])
-
-#def get_corollary_virtual_tables():
-#	virtual_tables = get_virtual_tables()
-#	suffixes = ['content', 'docsize', 'segdir', 'segments', 'stat']
-#	return set(
-#		'%s_%s' % (virtual_table, suffix) for suffix in suffixes
-#		for virtual_table in virtual_tables)
 
 @app.route('/')
 def index():
@@ -185,7 +171,7 @@ def add_column(table):
 def drop_column(table):
 	request_data = get_request_data()
 	name = request_data.get('name', '')
-	columns = dataset.get_columns(table)
+	columns = get_columns(table)
 	column_names = [column.name for column in columns]
 	if request.method == 'POST':
 		if name in column_names:
@@ -433,13 +419,11 @@ def _close_db(exc):
 def get_option_parser():
 	parser = optparse.OptionParser()
 	parser.add_option(
-		'-p',
 		'--port',
 		default=8080,
 		help='Port for web interface, default=8080',
 		type='int')
 	parser.add_option(
-		'-H',
 		'--host',
 		default='127.0.0.1',
 		help='Host for web interface, default=127.0.0.1')
@@ -448,13 +432,6 @@ def get_option_parser():
 		'--debug',
 		action='store_true',
 		help='Run server in debug mode')
-	parser.add_option(
-		'-x',
-		'--no-browser',
-		action='store_false',
-		default=False,
-		dest='browser',
-		help='Do not automatically open browser page.')
 	return parser
 
 def die(msg, exit_code=1):
@@ -483,8 +460,6 @@ def main():
 	global migrator
 	dataset = DataSet('sqlite:///%s' % db_file)
 	migrator = dataset._migrator
-	if options.browser:
-		open_browser_tab(options.host, options.port)
 	app.run(host=options.host, port=options.port, debug=options.debug)
 
 
